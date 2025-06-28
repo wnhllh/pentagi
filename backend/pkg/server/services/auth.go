@@ -687,15 +687,16 @@ func randBytes(nByte int) ([]byte, error) {
 }
 
 type info struct {
-	Type      string      `json:"type"`
-	Develop   bool        `json:"develop"`
-	User      models.User `json:"user"`
-	Role      models.Role `json:"role"`
-	Providers []string    `json:"providers"`
-	Privs     []string    `json:"privileges"`
-	OAuth     bool        `json:"oauth"`
-	IssuedAt  time.Time   `json:"issued_at"`
-	ExpiresAt time.Time   `json:"expires_at"`
+	Type        string      `json:"type"`
+	Develop     bool        `json:"develop"`
+	DevMode     string      `json:"dev_mode"`
+	User        models.User `json:"user"`
+	Role        models.Role `json:"role"`
+	Providers   []string    `json:"providers"`
+	Privs       []string    `json:"privileges"`
+	OAuth       bool        `json:"oauth"`
+	IssuedAt    time.Time   `json:"issued_at"`
+	ExpiresAt   time.Time   `json:"expires_at"`
 }
 
 // Info is function to return settings and current information about system and config
@@ -724,6 +725,7 @@ func (s *AuthService) Info(c *gin.Context) {
 	resp.IssuedAt = time.Unix(gtm, 0).UTC()
 	resp.ExpiresAt = time.Unix(exp, 0).UTC()
 	resp.Develop = version.IsDevelopMode()
+	resp.DevMode = "🔥 Hot Reload Active - Code changes auto-restart!"
 	resp.OAuth = tid == models.UserTypeOAuth.String()
 	for name := range s.oauth {
 		resp.Providers = append(resp.Providers, name)

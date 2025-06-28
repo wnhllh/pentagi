@@ -2,28 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Academic Paper Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @layer base {
     :root {
-        --background: 0 0% 100%;
-        --foreground: 222.2 84% 4.9%;
+        /* Academic Paper Theme - Light Mode */
+        --background: 0 0% 99%;
+        --foreground: 220 13% 18%;
         --card: 0 0% 100%;
-        --card-foreground: 222.2 84% 4.9%;
+        --card-foreground: 220 13% 18%;
         --popover: 0 0% 100%;
-        --popover-foreground: 222.2 84% 4.9%;
-        --primary: 222.2 47.4% 11.2%;
-        --primary-foreground: 210 40% 98%;
-        --secondary: 210 40% 96.1%;
-        --secondary-foreground: 222.2 47.4% 11.2%;
-        --muted: 210 40% 96.1%;
-        --muted-foreground: 215.4 16.3% 46.9%;
-        --accent: 210 40% 96.1%;
-        --accent-foreground: 222.2 47.4% 11.2%;
+        --popover-foreground: 220 13% 18%;
+        --primary: 221 83% 53%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 220 14% 96%;
+        --secondary-foreground: 220 13% 18%;
+        --muted: 220 14% 96%;
+        --muted-foreground: 220 8.9% 46.1%;
+        --accent: 220 14% 96%;
+        --accent-foreground: 220 13% 18%;
         --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 210 40% 98%;
-        --border: 214.3 31.8% 91.4%;
-        --input: 214.3 31.8% 91.4%;
-        --ring: 222.2 84% 4.9%;
-        --radius: 0.5rem;
+        --destructive-foreground: 0 0% 100%;
+        --border: 220 13% 91%;
+        --input: 220 13% 91%;
+        --ring: 221 83% 53%;
+        --radius: 0.375rem;
         --chart-1: 12 76% 61%;
         --chart-2: 173 58% 39%;
         --chart-3: 197 37% 24%;
@@ -224,4 +228,136 @@
 .prose pre code.hljs {
     padding: 0;
     overflow: visible;
+}
+
+@layer components {
+    /* Academic Chat Interface */
+    .academic-chat-container {
+        @apply bg-gradient-to-br from-slate-50 to-blue-50/30 min-h-screen;
+    }
+
+    .academic-chat-header {
+        @apply bg-white/80 backdrop-blur-sm border-b border-slate-200/60 px-6 py-4;
+        @apply shadow-sm;
+    }
+
+    .academic-chat-title {
+        @apply text-xl font-semibold text-slate-800 tracking-tight;
+        @apply flex items-center gap-3;
+    }
+
+    .academic-chat-subtitle {
+        @apply text-sm text-slate-600 font-medium mt-1;
+    }
+
+    .academic-message-container {
+        @apply max-w-4xl mx-auto px-6 py-8 space-y-6;
+    }
+
+    .academic-message-user {
+        @apply flex justify-end;
+    }
+
+    .academic-message-assistant {
+        @apply flex justify-start;
+    }
+
+    .academic-message-bubble-user {
+        @apply bg-blue-600 text-white px-6 py-4 rounded-2xl rounded-br-md;
+        @apply max-w-2xl shadow-lg shadow-blue-600/20;
+        @apply font-medium leading-relaxed;
+    }
+
+    .academic-message-bubble-assistant {
+        @apply bg-white border border-slate-200/60 px-6 py-5 rounded-2xl rounded-bl-md;
+        @apply max-w-3xl shadow-lg shadow-slate-900/5;
+        @apply leading-relaxed;
+    }
+
+    .academic-message-meta {
+        @apply flex items-center gap-2 text-xs text-slate-500 mb-2;
+    }
+
+    .academic-message-avatar {
+        @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold;
+    }
+
+    .academic-message-avatar-user {
+        @apply bg-blue-600 text-white;
+    }
+
+    .academic-message-avatar-assistant {
+        @apply bg-slate-100 text-slate-700 border border-slate-200;
+    }
+
+    .academic-input-container {
+        @apply fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm;
+        @apply border-t border-slate-200/60 px-6 py-4;
+        @apply shadow-lg shadow-slate-900/5;
+    }
+
+    .academic-input-wrapper {
+        @apply max-w-4xl mx-auto flex items-end gap-3;
+    }
+
+    .academic-input-field {
+        @apply flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3;
+        @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+        @apply resize-none min-h-[44px] max-h-32;
+        @apply placeholder:text-slate-500;
+        @apply shadow-sm;
+    }
+
+    .academic-send-button {
+        @apply bg-blue-600 hover:bg-blue-700 text-white;
+        @apply w-11 h-11 rounded-xl flex items-center justify-center;
+        @apply transition-colors shadow-lg shadow-blue-600/25;
+        @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .academic-model-selector {
+        @apply bg-white border border-slate-300 rounded-lg px-3 py-2;
+        @apply text-sm font-medium text-slate-700;
+        @apply hover:bg-slate-50 transition-colors;
+        @apply shadow-sm;
+    }
+
+    .academic-thinking-toggle {
+        @apply text-xs text-blue-600 hover:text-blue-700 cursor-pointer;
+        @apply font-medium underline decoration-dotted underline-offset-2;
+    }
+
+    .academic-thinking-content {
+        @apply bg-blue-50/50 border border-blue-200/60 rounded-lg p-4 mt-3;
+        @apply text-sm text-slate-700 leading-relaxed;
+        @apply font-mono;
+    }
+
+    .academic-code-block {
+        @apply bg-slate-900 text-slate-100 rounded-lg p-4 my-4;
+        @apply font-mono text-sm leading-relaxed;
+        @apply overflow-x-auto;
+    }
+
+    .academic-timestamp {
+        @apply text-xs text-slate-400 font-medium;
+    }
+
+    .academic-status-indicator {
+        @apply w-2 h-2 rounded-full;
+    }
+
+    .academic-status-running {
+        @apply bg-green-500 animate-pulse;
+    }
+
+    .academic-status-idle {
+        @apply bg-slate-300;
+    }
+
+    .academic-provider-badge {
+        @apply inline-flex items-center gap-1 px-2 py-1 rounded-md;
+        @apply bg-slate-100 text-slate-700 text-xs font-medium;
+        @apply border border-slate-200;
+    }
 }

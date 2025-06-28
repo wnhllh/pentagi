@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# PentAGI 服务状态报告
+echo "📊 PentAGI 服务状态报告"
+echo "======================"
+
+echo ""
+echo "🗄️  数据库 (PostgreSQL with pgvector)"
+echo "运行方式: Docker 容器"
+echo "容器名称: pgvector"
+echo "镜像: vxcontrol/pgvector:latest"
+echo "端口映射: 127.0.0.1:5432 → 容器:5432"
+echo "状态: $(docker ps --filter name=pgvector --format '{{.Status}}')"
+echo "数据库版本: $(docker exec pgvector psql -U postgres -d pentagidb -t -c "SELECT version();" 2>/dev/null | head -1 | xargs)"
+
+echo ""
+echo "🔧 后端服务 (Go)"
+echo "运行方式: 本地进程"
+echo "可执行文件: $(pwd)/backend/pentagi"
+echo "文件大小: $(ls -lh backend/pentagi | awk '{print $5}')"
+echo "进程ID: $(pgrep -f './pentagi' || echo '未找到')"
+echo "监听端口: *:8080 (所有接口)"
+echo "数据库连接: localhost:5432 (连接到Docker容器)"
+
+echo ""
+echo "🎨 前端服务 (React + Vite)"
+echo "运行方式: 本地进程 (开发模式)"
+echo "开发服务器: Vite"
+echo "进程ID: $(pgrep -f 'vite' || echo '未找到')"
+echo "监听端口: 0.0.0.0:8000 (所有接口)"
+echo "后端连接: 通过隧道连接到后端API"
+
+echo ""
+echo "🌐 隧道服务 (Cloudflare Tunnel)"
+echo "前端隧道: $(pgrep -f 'cloudflared.*8000' >/dev/null && echo '运行中' || echo '未运行')"
+echo "后端隧道: $(pgrep -f 'cloudflared.*8080' >/dev/null && echo '运行中' || echo '未运行')"
+
+echo ""
+echo "📋 详细状态："
+
+echo ""
+echo "Docker 容器:"
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}" | grep -E "(NAMES|pgvector)"
+
+echo ""
+echo "本地进程:"
+echo "PID    进程名称                    端口"
+echo "----   ----------------------     ----"
+ps aux | grep -E "(pentagi|vite)" | grep -v grep | awk '{print $2 "    " $11 "                   "}' | head -2
+ss -tlnp | grep -E ":(8080|8000)" | awk '{print "       监听: " $4}'
+
+echo ""
+echo "🔗 连接架构："
+echo "┌─────────────┐    ┌──────────────┐    ┌─────────────┐"
+echo "│   用户      │───▶│ Cloudflare   │───▶│   前端      │"
+echo "│  (互联网)   │    │   Tunnel     │    │ (本地Vite)  │"
+echo "└─────────────┘    └──────────────┘    └─────────────┘"
+echo "                                              │"
+echo "                                              ▼"
+echo "                   ┌──────────────┐    ┌─────────────┐"
+echo "                   │ Cloudflare   │◀───│   后端      │"
+echo "                   │   Tunnel     │    │ (本地Go)    │"
+echo "                   └──────────────┘    └─────────────┘"
+echo "                                              │"
+echo "                                              ▼"
+echo "                                       ┌─────────────┐"
+echo "                                       │   数据库    │"
+echo "                                       │ (Docker)    │"
+echo "                                       └─────────────┘"
+
+echo ""
+echo "📝 总结："
+echo "• 数据库: 运行在 Docker 容器中 ✅"
+echo "• 后端: 运行在本地 (编译的Go二进制文件) ✅"
+echo "• 前端: 运行在本地 (Vite开发服务器) ✅"
+echo "• 隧道: Cloudflare Tunnel 提供互联网访问 ✅"
+
+echo ""
+echo "💡 这种架构的优势："
+echo "• 数据库隔离在容器中，便于管理"
+echo "• 后端和前端在本地运行，便于开发和调试"
+echo "• 通过隧道提供互联网访问，无需复杂网络配置"

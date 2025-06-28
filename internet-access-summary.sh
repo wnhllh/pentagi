@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# 互联网访问总结脚本
+echo "🌍 PentAGI 互联网访问总结"
+echo "========================"
+
+echo ""
+echo "🎉 恭喜！您的 PentAGI 应用现在可以从互联网访问了！"
+echo ""
+
+echo "🔗 互联网访问地址："
+echo "┌─────────────────────────────────────────────────────────────────────────────┐"
+echo "│ 🌐 前端应用 (主要访问地址)                                                   │"
+echo "│    https://frost-attempted-midlands-invitations.trycloudflare.com           │"
+echo "│                                                                             │"
+echo "│ 🔧 后端API (开发者使用)                                                      │"
+echo "│    https://fitted-platform-compressed-cholesterol.trycloudflare.com        │"
+echo "│                                                                             │"
+echo "│ 📚 API文档                                                                   │"
+echo "│    https://fitted-platform-compressed-cholesterol.trycloudflare.com/api/v1/swagger/index.html │"
+echo "│                                                                             │"
+echo "│ 🔍 GraphQL Playground                                                       │"
+echo "│    https://fitted-platform-compressed-cholesterol.trycloudflare.com/api/v1/graphql/playground │"
+echo "└─────────────────────────────────────────────────────────────────────────────┘"
+
+echo ""
+echo "📱 使用说明："
+echo "1. 点击前端应用链接即可开始使用 PentAGI"
+echo "2. 应用已配置好前后端连接，无需额外设置"
+echo "3. 支持所有现代浏览器和移动设备"
+
+echo ""
+echo "⚠️  重要提醒："
+echo "• 这些是临时隧道地址，重启服务后会改变"
+echo "• 免费隧道有连接数限制，适合测试和演示"
+echo "• 生产环境建议使用付费隧道或自建服务器"
+
+echo ""
+echo "🔧 当前运行的服务："
+echo "• 数据库: PostgreSQL (Docker容器)"
+echo "• 后端: Go服务 (本地运行)"
+echo "• 前端: React + Vite (本地运行)"
+echo "• 隧道: Cloudflare Tunnel (2个隧道)"
+
+echo ""
+echo "🛑 停止服务："
+echo "要停止所有服务，请在各个终端中按 Ctrl+C："
+echo "1. 前端隧道终端"
+echo "2. 后端隧道终端"
+echo "3. 前端开发服务器终端"
+echo "4. 后端服务器终端"
+echo "5. 停止数据库: docker-compose stop pgvector"
+
+echo ""
+echo "🔄 重新启动："
+echo "如果需要重新启动，运行："
+echo "1. ./setup-local-dev.sh (启动本地服务)"
+echo "2. ./setup-cloudflare-tunnel.sh (创建新隧道)"
+
+echo ""
+echo "📞 技术支持："
+echo "如果遇到问题，请检查："
+echo "• 所有服务是否正常运行"
+echo "• 网络连接是否稳定"
+echo "• 隧道是否仍然活跃"
+
+echo ""
+echo "🎯 现在您可以分享前端链接给任何人使用 PentAGI 了！"

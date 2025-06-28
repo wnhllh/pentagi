@@ -48,6 +48,11 @@ export default defineConfig(({ mode }) => {
         },
         port: vitePort,
         host: viteHost,
+        allowedHosts: [
+            'localhost',
+            '.trycloudflare.com',
+            'frost-attempted-midlands-invitations.trycloudflare.com'
+        ], // Allow tunnel hosts
         ...(useHttps && {
             https: {
                 key: readFileSync(sslKeyPath),
