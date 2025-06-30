@@ -5,6 +5,7 @@
 
 backend/tmp
 backend/build
+backend/pentagi
 
 frontend/coverage
 frontend/dist
