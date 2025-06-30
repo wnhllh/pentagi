@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => {
         allowedHosts: [
             'localhost',
             '.trycloudflare.com',
-            'tapes-worldcat-orleans-hydrocodone.trycloudflare.com'
+            'paid-shipped-rebate-aberdeen.trycloudflare.com'
         ], // Allow tunnel hosts
         hmr: false, // 只禁用HMR WebSocket，保留应用的WebSocket功能
         ...(useHttps && {

@@ -126,6 +126,9 @@ type Config struct {
 	LangfuseProjectID string `env:"LANGFUSE_PROJECT_ID"`
 	LangfusePublicKey string `env:"LANGFUSE_PUBLIC_KEY"`
 	LangfuseSecretKey string `env:"LANGFUSE_SECRET_KEY"`
+
+	// Power Industry Planner
+	PowerPlannerEnabled bool `env:"POWER_PLANNER_ENABLED" envDefault:"true"`
 }
 
 func NewConfig() (*Config, error) {

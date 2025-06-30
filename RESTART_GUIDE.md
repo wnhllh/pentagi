@@ -365,21 +365,41 @@ docker exec pentagi-terminal-1 ping -c 1 172.25.0.10
 
 **症状**: 无法通过cloudflare地址访问，或连接不稳定
 
-**解决方案**:
+**原因**:
+⚠️ **Cloudflare免费隧道限制**:
+- 无正常运行时间保证 (no uptime guarantee)
+- 随时可能断开连接
+- 设计用于快速实验，不适合生产环境
+
+**快速解决方案**:
 ```bash
-# 1. 重新创建隧道
-# 按 Ctrl+C 停止当前隧道
+# 使用自动重启脚本
+./restart-tunnel.sh
+```
+
+**手动解决方案**:
+```bash
+# 1. 停止现有隧道
+pkill -f cloudflared
+
+# 2. 检查前端服务端口
+curl http://localhost:8000  # 或 8001
+
+# 3. 重新创建隧道
 cloudflared tunnel --url http://localhost:8000
 
-# 2. 检查本地服务是否正常
-curl http://localhost:8000
-
-# 3. 更新前端allowedHosts配置
+# 4. 更新前端allowedHosts配置
 # 编辑 frontend/vite.config.ts，添加新的隧道地址
 
-# 4. 如果仍有问题，尝试不同的端口
-cloudflared tunnel --url http://localhost:8001
+# 5. 重启前端服务 (可选)
+cd frontend && npm run dev
 ```
+
+**长期解决方案**:
+- 注册Cloudflare账户创建命名隧道
+- 使用其他隧道服务 (ngrok, localtunnel)
+- 部署到云服务 (Vercel, Netlify)
+- 自建服务器
 
 ### 问题10: 权限和安全问题
 
