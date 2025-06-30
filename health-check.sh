@@ -88,19 +88,64 @@ if check_service "后端API" "curl -s http://localhost:8080/api/v1/info | jq -r 
     ((passed_checks++))
 fi
 
+# 检查前端服务（可能在8000或8001端口）
 ((total_checks++))
-if check_service "前端服务" "curl -I http://localhost:8000" "HTTP"; then
-    ((passed_checks++))
+if curl -I http://localhost:8001 > /dev/null 2>&1; then
+    if check_service "前端服务" "curl -I http://localhost:8001" "HTTP"; then
+        ((passed_checks++))
+        FRONTEND_PORT=8001
+    fi
+elif curl -I http://localhost:8000 > /dev/null 2>&1; then
+    if check_service "前端服务" "curl -I http://localhost:8000" "HTTP"; then
+        ((passed_checks++))
+        FRONTEND_PORT=8000
+    fi
+else
+    echo -e "${RED}✗ 前端服务未运行${NC}"
+    FRONTEND_PORT=""
 fi
 
-((total_checks++))
-if check_service "前端代理" "curl -s http://localhost:8000/api/v1/info | jq -r .status" "success"; then
-    ((passed_checks++))
+# 检查前端代理（如果前端服务正常）
+if [ -n "$FRONTEND_PORT" ]; then
+    ((total_checks++))
+    if check_service "前端代理" "curl -s http://localhost:$FRONTEND_PORT/api/v1/info | jq -r .status" "success"; then
+        ((passed_checks++))
+    fi
+else
+    ((total_checks++))
+    echo -e "${RED}✗ 前端代理 (前端服务未运行)${NC}"
 fi
 
 echo ""
 
-# 4. 检查Docker网络
+# 4. 检查WebSocket配置
+echo "🌐 WebSocket配置"
+echo "----------------"
+if [ -n "$FRONTEND_PORT" ]; then
+    echo -n "WebSocket智能配置... "
+    if grep -q "isCloudflareEnvironment" frontend/src/lib/apollo.ts; then
+        echo -e "${GREEN}✓ 已配置${NC}"
+        ((passed_checks++))
+    else
+        echo -e "${RED}✗ 未配置${NC}"
+    fi
+    ((total_checks++))
+
+    echo -n "Apollo配置文件... "
+    if [ -f "frontend/src/lib/apollo.ts" ]; then
+        echo -e "${GREEN}✓ 存在${NC}"
+        ((passed_checks++))
+    else
+        echo -e "${RED}✗ 缺失${NC}"
+    fi
+    ((total_checks++))
+else
+    echo -e "${YELLOW}⚠ 跳过WebSocket检查 (前端服务未运行)${NC}"
+fi
+
+echo ""
+
+# 5. 检查Docker网络
 echo "🌐 网络连接"
 echo "-----------"
 ((total_checks++))

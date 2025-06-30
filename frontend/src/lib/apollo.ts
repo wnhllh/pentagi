@@ -30,41 +30,51 @@ const httpLink = createHttpLink({
     },
 });
 
-const wsLink = new GraphQLWsLink(
-    createClient({
-        url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${baseUrl}/graphql`,
-        retryAttempts: 5,
-        connectionParams: () => {
-            return {}; // Cookies are handled automatically
-        },
-        on: {
-            connected: () => Log.debug('GraphQL WebSocket connected'),
-            error: (error) => Log.error('GraphQL WebSocket error:', error),
-            closed: () => Log.debug('GraphQL WebSocket closed'),
-            connecting: () => Log.debug('GraphQL WebSocket connecting...'),
-            ping: () => Log.debug('GraphQL WebSocket ping'),
-            pong: () => Log.debug('GraphQL WebSocket pong'),
-        },
-        shouldRetry: () => true,
-        retryWait: (retries) => new Promise((resolve) => {
-            const timeout = Math.min(1000 * 2 ** retries, 10000);
-            setTimeout(() => resolve(), timeout);
+// 检查是否在cloudflare隧道环境下
+const isCloudflareEnvironment = window.location.hostname.includes('trycloudflare.com');
+
+// 记录当前模式
+if (isCloudflareEnvironment) {
+    Log.info('🌐 运行在Cloudflare隧道环境，使用HTTP轮询模式');
+} else {
+    Log.info('🔌 运行在本地环境，使用WebSocket实时模式');
+}
+
+const wsLink = isCloudflareEnvironment
+    ? null // 在cloudflare环境下禁用WebSocket
+    : new GraphQLWsLink(
+        createClient({
+            url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${baseUrl}/graphql`,
+            retryAttempts: 5,
+            connectionParams: () => {
+                return {}; // Cookies are handled automatically
+            },
+            on: {
+                connected: () => Log.debug('GraphQL WebSocket connected'),
+                error: (error) => Log.error('GraphQL WebSocket error:', error),
+                closed: () => Log.debug('GraphQL WebSocket closed'),
+                connecting: () => Log.debug('GraphQL WebSocket connecting...'),
+                ping: () => Log.debug('GraphQL WebSocket ping'),
+                pong: () => Log.debug('GraphQL WebSocket pong'),
+            },
+            shouldRetry: () => true,
+            retryWait: (retries) => new Promise((resolve) => {
+                const timeout = Math.min(1000 * 2 ** retries, 10000);
+                setTimeout(() => resolve(), timeout);
+            }),
         }),
-    }),
-);
+    );
 
-// 暂时禁用WebSocket订阅，使用HTTP轮询
-// const link = split(
-//     ({ query }) => {
-//         const definition = getMainDefinition(query);
-//         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
-//     },
-//     wsLink,
-//     httpLink,
-// );
-
-// 只使用HTTP连接，避免cloudflare隧道的WebSocket问题
-const link = httpLink;
+const link = wsLink
+    ? split(
+        ({ query }) => {
+            const definition = getMainDefinition(query);
+            return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
+        },
+        wsLink,
+        httpLink,
+    )
+    : httpLink; // 在cloudflare环境下只使用HTTP连接
 
 // Helper functions
 const addIncoming = (existing: any[], incoming: any, cache: any) => {
@@ -392,7 +402,7 @@ const defaultOptions: DefaultOptions = {
         fetchPolicy: 'cache-and-network',
         nextFetchPolicy: 'cache-first',
         notifyOnNetworkStatusChange: true,
-        pollInterval: 5000, // 每5秒轮询一次以获取实时更新，减少服务器负载
+        pollInterval: isCloudflareEnvironment ? 3000 : undefined, // 在cloudflare环境下使用轮询
     },
 };
 

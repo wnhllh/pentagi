@@ -67,6 +67,36 @@ docker network connect power-it-lab_power-network pentagi-terminal-1
 docker network connect power-it-lab_power-network pentagi-terminal-2
 ```
 
+## 🌐 WebSocket和实时通信配置
+
+### 智能连接模式
+
+系统实现了智能WebSocket配置，根据部署环境自动选择最佳连接方式：
+
+#### 本地开发环境
+- **检测条件**: `hostname` 不包含 `trycloudflare.com`
+- **连接方式**: WebSocket (ws:// 或 wss://)
+- **实时性**: 真正的实时推送，延迟 < 100ms
+- **适用场景**: 开发调试、本地测试
+
+#### Cloudflare隧道环境
+- **检测条件**: `hostname` 包含 `trycloudflare.com`
+- **连接方式**: HTTP轮询 (每3秒)
+- **实时性**: 准实时推送，延迟 ≤ 3秒
+- **适用场景**: 演示部署、远程访问
+
+### 配置文件位置
+- **Apollo配置**: `frontend/src/lib/apollo.ts`
+- **环境检测**: 自动检测，无需手动配置
+- **轮询间隔**: 3000ms (可在代码中调整)
+
+### 故障排除
+如果消息推送不工作：
+1. 检查浏览器控制台是否有WebSocket错误
+2. 确认当前环境模式（控制台会显示日志）
+3. 在Cloudflare环境下，等待最多3秒查看新消息
+4. 如果仍有问题，手动刷新页面
+
 ## 🔧 常见故障排除
 
 ### 问题1: 看不到Provider选择
@@ -95,11 +125,23 @@ go run cmd/pentagi/main.go
 
 ### 问题2: WebSocket连接失败
 
-**症状**: 控制台显示WebSocket连接错误
+**症状**: 控制台显示WebSocket连接错误，消息推送不工作
 
-**解决方案**: 
-- 已禁用WebSocket，使用HTTP轮询
-- 如果仍有错误，检查前端配置中的allowedHosts
+**原因**:
+- Cloudflare免费隧道不支持WebSocket连接
+- 本地开发环境可以使用WebSocket
+
+**解决方案**:
+系统已实现智能WebSocket配置：
+- **本地环境** (localhost): 自动使用WebSocket实时连接
+- **Cloudflare环境** (*.trycloudflare.com): 自动使用HTTP轮询（3秒间隔）
+- 系统会自动检测环境并选择最佳连接方式
+
+**重要注意事项**:
+⚠️ **消息推送机制**:
+- 本地开发: 真正的WebSocket实时推送
+- Cloudflare部署: HTTP轮询模拟实时推送（3秒延迟）
+- 用户无需手动刷新，新消息会自动显示
 
 ### 问题3: 工具执行权限错误
 
@@ -185,14 +227,22 @@ docker network inspect power-it-lab_power-network | jq '.[0].Containers | to_ent
 
 ### 端口配置
 - **后端**: localhost:8080
-- **前端**: localhost:8000
+- **前端**: localhost:8001 (如果8000被占用会自动切换)
 - **数据库**: localhost:5432
 - **Cloudflare隧道**: 动态生成
+
+### WebSocket配置
+- **本地环境**: WebSocket实时连接 (ws://localhost:8001/api/v1/graphql)
+- **Cloudflare环境**: HTTP轮询 (3秒间隔)
+- **自动检测**: 基于hostname自动选择连接方式
+- **日志标识**:
+  - 🔌 本地环境: "运行在本地环境，使用WebSocket实时模式"
+  - 🌐 Cloudflare环境: "运行在Cloudflare隧道环境，使用HTTP轮询模式"
 
 ### 重要文件
 - **环境变量**: `.env` (根目录) 和 `backend/.env`
 - **前端配置**: `frontend/vite.config.ts`
-- **Apollo配置**: `frontend/src/lib/apollo.ts`
+- **Apollo配置**: `frontend/src/lib/apollo.ts` (包含智能WebSocket配置)
 - **Docker配置**: `docker-compose.yml`, `power-it-lab/docker-compose.yml`
 
 ## 🔍 健康检查命令

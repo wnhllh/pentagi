@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => {
     const viteHost = viteEnv.VITE_HOST || '0.0.0.0';
     const useHttps = viteEnv.VITE_USE_HTTPS === 'true';
 
+    // 只禁用Vite HMR，保留应用WebSocket功能
+
     const sslKeyPath = viteEnv.VITE_SSL_KEY_PATH || 'ssl/server.key';
     const sslCertPath = viteEnv.VITE_SSL_CERT_PATH || 'ssl/server.crt';
 
@@ -51,9 +53,9 @@ export default defineConfig(({ mode }) => {
         allowedHosts: [
             'localhost',
             '.trycloudflare.com',
-            'montgomery-owen-thehun-kid.trycloudflare.com'
+            'tapes-worldcat-orleans-hydrocodone.trycloudflare.com'
         ], // Allow tunnel hosts
-        hmr: false, // 彻底禁用HMR WebSocket
+        hmr: false, // 只禁用HMR WebSocket，保留应用的WebSocket功能
         ...(useHttps && {
             https: {
                 key: readFileSync(sslKeyPath),
