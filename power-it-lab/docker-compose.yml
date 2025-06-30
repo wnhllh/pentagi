@@ -1,0 +1,187 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 电力营销系统 2.0 靶场
+  # ==========================================
+
+  # 营销系统 - API网关
+  marketing-gateway:
+    build: ./marketing-system/gateway
+    container_name: power-marketing-gateway
+    ports:
+      - "18080:8080"  # 避免与PentAGI后端冲突
+    environment:
+      - JWT_SECRET=weak_secret_key_123
+      - DB_HOST=marketing-db
+      - REDIS_HOST=marketing-cache
+    depends_on:
+      - marketing-db
+      - marketing-cache
+    networks:
+      - power-network
+
+  # 营销系统 - 数据库
+  marketing-db:
+    image: mysql:8.0
+    container_name: power-marketing-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=power_marketing
+      - MYSQL_USER=marketing_user
+      - MYSQL_PASSWORD=admin123
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./marketing-system/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - marketing-data:/var/lib/mysql
+    networks:
+      - power-network
+
+  # 营销系统 - Redis缓存
+  marketing-cache:
+    image: redis:7-alpine
+    container_name: power-marketing-cache
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass cache123
+    networks:
+      - power-network
+
+  # ==========================================
+  # i国网APP 后端系统靶场
+  # ==========================================
+
+  # i国网 - API服务器
+  iguowang-api:
+    build: ./iguowang-app/api-server
+    container_name: iguowang-api-server
+    ports:
+      - "9080:8080"
+    environment:
+      - DB_HOST=iguowang-db
+      - SMS_API_KEY=test_sms_key_123
+      - WECHAT_SECRET=wx_secret_456
+    depends_on:
+      - iguowang-db
+    networks:
+      - power-network
+
+  # i国网 - 移动端模拟器
+  iguowang-mobile-sim:
+    build: ./iguowang-app/mobile-simulator
+    container_name: iguowang-mobile-sim
+    ports:
+      - "9090:80"
+    environment:
+      - API_BASE_URL=http://iguowang-api:8080
+    depends_on:
+      - iguowang-api
+    networks:
+      - power-network
+
+  # i国网 - 数据库
+  iguowang-db:
+    image: postgres:15
+    container_name: iguowang-database
+    environment:
+      - POSTGRES_DB=iguowang
+      - POSTGRES_USER=iguowang_user
+      - POSTGRES_PASSWORD=iguowang123
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./iguowang-app/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - iguowang-data:/var/lib/postgresql/data
+    networks:
+      - power-network
+
+  # ==========================================
+  # ERP系统靶场 (SAP风格)
+  # ==========================================
+
+  # ERP - 主应用服务器
+  erp-app-server:
+    build: ./erp-system/app-server
+    container_name: power-erp-server
+    ports:
+      - "18000:8080"  # 避免与PentAGI前端冲突
+    environment:
+      - DB_HOST=erp-db
+      - SAP_SYSTEM_ID=PRD
+      - SAP_CLIENT=100
+    depends_on:
+      - erp-db
+    networks:
+      - power-network
+
+  # ERP - Web界面
+  erp-web-gui:
+    build: ./erp-system/web-gui
+    container_name: power-erp-web
+    ports:
+      - "18001:80"  # 避免与PentAGI前端冲突
+    environment:
+      - ERP_SERVER_URL=http://erp-app-server:8080
+    depends_on:
+      - erp-app-server
+    networks:
+      - power-network
+
+  # ERP - 数据库
+  erp-db:
+    image: postgres:15
+    container_name: power-erp-database
+    environment:
+      - POSTGRES_DB=sap_erp
+      - POSTGRES_USER=sap_admin
+      - POSTGRES_PASSWORD=sap_admin_2024
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./erp-system/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - erp-data:/var/lib/postgresql/data
+    networks:
+      - power-network
+
+  # ==========================================
+  # 攻击工具和监控
+  # ==========================================
+
+  # Kali Linux 攻击机
+  kali-attacker:
+    image: kalilinux/kali-rolling
+    container_name: power-kali-attacker
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./tools:/tools
+    networks:
+      - power-network
+    command: /bin/bash
+
+  # 流量监控
+  wireshark-monitor:
+    image: linuxserver/wireshark
+    container_name: power-traffic-monitor
+    ports:
+      - "3000:3000"
+    environment:
+      - PUID=1000
+      - PGID=1000
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - power-network
+
+volumes:
+  marketing-data:
+  iguowang-data:
+  erp-data:
+
+networks:
+  power-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16

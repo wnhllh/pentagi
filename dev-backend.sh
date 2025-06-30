@@ -4,6 +4,13 @@
 echo "🚀 启动后端开发模式"
 echo "=================="
 
+# 加载环境变量
+if [ -f "../.env" ]; then
+    echo "📋 加载环境变量..."
+    export $(grep -v '^#' ../.env | xargs)
+    echo "✅ 环境变量已加载"
+fi
+
 # 设置工作目录
 cd backend
 
@@ -16,7 +23,7 @@ if ! docker ps | grep -q pgvector; then
     echo "✅ 数据库已启动"
 fi
 
-# 设置环境变量
+# 确保数据库URL正确
 export DATABASE_URL="postgres://postgres:postgres@localhost:5432/pentagidb?sslmode=disable"
 
 echo "📝 开发模式特点："

@@ -25,6 +25,9 @@ const streamingAssistantLogs = new LRUCache<string, {
 const httpLink = createHttpLink({
     uri: `${window.location.origin}${baseUrl}/graphql`,
     credentials: 'include',
+    fetchOptions: {
+        timeout: 30000, // 30秒超时
+    },
 });
 
 const wsLink = new GraphQLWsLink(
@@ -50,14 +53,18 @@ const wsLink = new GraphQLWsLink(
     }),
 );
 
-const link = split(
-    ({ query }) => {
-        const definition = getMainDefinition(query);
-        return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
-    },
-    wsLink,
-    httpLink,
-);
+// 暂时禁用WebSocket订阅，使用HTTP轮询
+// const link = split(
+//     ({ query }) => {
+//         const definition = getMainDefinition(query);
+//         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
+//     },
+//     wsLink,
+//     httpLink,
+// );
+
+// 只使用HTTP连接，避免cloudflare隧道的WebSocket问题
+const link = httpLink;
 
 // Helper functions
 const addIncoming = (existing: any[], incoming: any, cache: any) => {
@@ -385,6 +392,7 @@ const defaultOptions: DefaultOptions = {
         fetchPolicy: 'cache-and-network',
         nextFetchPolicy: 'cache-first',
         notifyOnNetworkStatusChange: true,
+        pollInterval: 5000, // 每5秒轮询一次以获取实时更新，减少服务器负载
     },
 };
 

@@ -40,6 +40,16 @@ const (
 	SubtaskListToolName       = "subtask_list"
 	TerminalToolName          = "terminal"
 	FileToolName              = "file"
+	// Power Industry Tools
+	PowerPentesterToolName    = "power_pentester"
+	APITesterToolName         = "api_tester"
+	BizLogicTesterToolName    = "biz_logic_tester"
+	ComplianceAgentToolName   = "compliance_agent"
+	BillingLogicToolName      = "test_billing_logic"
+	APIFuzzerToolName         = "fuzz_power_apis"
+	SAPScannerToolName        = "scan_sap_security"
+	MobileSecurityToolName    = "test_mobile_security"
+	PowerDataAnalyzerToolName = "analyze_power_data"
 )
 
 type ToolType int
@@ -87,6 +97,16 @@ var toolsTypeMapping = map[string]ToolType{
 	SubtaskListToolName:       StoreAgentResultToolType,
 	TerminalToolName:          EnvironmentToolType,
 	FileToolName:              EnvironmentToolType,
+	// Power Industry Tools
+	PowerPentesterToolName:    AgentToolType,
+	APITesterToolName:         AgentToolType,
+	BizLogicTesterToolName:    AgentToolType,
+	ComplianceAgentToolName:   AgentToolType,
+	BillingLogicToolName:      EnvironmentToolType,
+	APIFuzzerToolName:         EnvironmentToolType,
+	SAPScannerToolName:        EnvironmentToolType,
+	MobileSecurityToolName:    EnvironmentToolType,
+	PowerDataAnalyzerToolName: EnvironmentToolType,
 }
 
 var reflector = &jsonschema.Reflector{
@@ -292,6 +312,71 @@ var registryDefinitions = map[string]llms.FunctionDefinition{
 		Description: "If you need to finish the task with success or failure, use this tool",
 		Parameters:  reflector.Reflect(&Done{}),
 	},
+	// Power Industry Agent Tools
+	PowerPentesterToolName: {
+		Name: PowerPentesterToolName,
+		Description: "Specialized penetration testing agent for electric power industry IT systems. " +
+			"Performs comprehensive security testing on Power Marketing System 2.0, i国网APP, and SAP ERP systems " +
+			"with focus on billing logic, customer data protection, and business process security.",
+		Parameters: reflector.Reflect(&PowerPentesterAction{}),
+	},
+	APITesterToolName: {
+		Name: APITesterToolName,
+		Description: "API security testing agent specialized for power industry endpoints. " +
+			"Tests authentication, authorization, business logic, and data protection in power system APIs " +
+			"including billing, customer management, and payment processing endpoints.",
+		Parameters: reflector.Reflect(&APITesterAction{}),
+	},
+	BizLogicTesterToolName: {
+		Name: BizLogicTesterToolName,
+		Description: "Business logic testing agent for power industry systems. " +
+			"Tests billing calculations, pricing logic, workflow integrity, authorization controls, " +
+			"and regulatory compliance in electricity billing and customer management systems.",
+		Parameters: reflector.Reflect(&BizLogicTesterAction{}),
+	},
+	ComplianceAgentToolName: {
+		Name: ComplianceAgentToolName,
+		Description: "Compliance and regulatory testing agent for power industry systems. " +
+			"Assesses compliance with NERC CIP, FERC standards, SOX, GDPR, ISO 27001, and other " +
+			"regulatory requirements specific to electric utility operations.",
+		Parameters: reflector.Reflect(&ComplianceAgentAction{}),
+	},
+	// Power Industry Security Tools
+	BillingLogicToolName: {
+		Name: BillingLogicToolName,
+		Description: "Tests electricity billing calculation logic for vulnerabilities including " +
+			"boundary value testing, tiered pricing validation, time-of-use calculations, " +
+			"and business rule enforcement. Detects billing manipulation and calculation errors.",
+		Parameters: reflector.Reflect(&BillingLogicTestAction{}),
+	},
+	APIFuzzerToolName: {
+		Name: APIFuzzerToolName,
+		Description: "Comprehensive API fuzzing tool for power industry endpoints. " +
+			"Performs authentication bypass testing, authorization escalation, business logic manipulation, " +
+			"injection attacks, and parameter pollution testing on power system APIs.",
+		Parameters: reflector.Reflect(&APIFuzzerAction{}),
+	},
+	SAPScannerToolName: {
+		Name: SAPScannerToolName,
+		Description: "SAP security scanner for power industry ERP systems. " +
+			"Tests for default credentials, configuration issues, authorization bypasses, " +
+			"and known SAP vulnerabilities in electric utility enterprise systems.",
+		Parameters: reflector.Reflect(&SAPScannerAction{}),
+	},
+	MobileSecurityToolName: {
+		Name: MobileSecurityToolName,
+		Description: "Mobile application security tester for power industry mobile apps. " +
+			"Tests mobile-specific vulnerabilities including SMS verification bypass, " +
+			"API endpoint security, data storage issues, and authentication mechanisms.",
+		Parameters: reflector.Reflect(&MobileSecurityAction{}),
+	},
+	PowerDataAnalyzerToolName: {
+		Name: PowerDataAnalyzerToolName,
+		Description: "Power industry data analyzer for security insights. " +
+			"Analyzes electricity usage patterns, billing data, customer information, " +
+			"and system logs for security anomalies, privacy risks, and compliance issues.",
+		Parameters: reflector.Reflect(&PowerDataAnalyzerAction{}),
+	},
 }
 
 func getMessageType(name string) database.MsglogType {
@@ -311,6 +396,10 @@ func getMessageType(name string) database.MsglogType {
 		return database.MsglogTypeAsk
 	case FinalyToolName:
 		return database.MsglogTypeDone
+	case PowerPentesterToolName, APITesterToolName, BizLogicTesterToolName, ComplianceAgentToolName:
+		return database.MsglogTypeThoughts // Power industry agents
+	case BillingLogicToolName, APIFuzzerToolName, SAPScannerToolName, MobileSecurityToolName, PowerDataAnalyzerToolName:
+		return database.MsglogTypeTerminal // Power industry tools
 	default:
 		return database.MsglogTypeThoughts
 	}

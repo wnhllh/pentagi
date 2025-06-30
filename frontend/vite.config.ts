@@ -35,15 +35,15 @@ export default defineConfig(({ mode }) => {
     const serverConfig = {
         proxy: {
             '/api/v1': {
-                target: `${useHttps ? 'https' : 'http'}://${viteEnv.VITE_API_URL}`,
+                target: 'http://localhost:8080',
                 changeOrigin: true,
                 secure: false,
             },
-            '/api/v1/graphql': {
-                target: `${useHttps ? 'wss' : 'ws'}://${viteEnv.VITE_API_URL}`,
+            '/graphql': {
+                target: 'http://localhost:8080',
                 changeOrigin: true,
-                wss: `${useHttps}`,
                 secure: false,
+                ws: true, // 支持WebSocket
             },
         },
         port: vitePort,
@@ -51,8 +51,9 @@ export default defineConfig(({ mode }) => {
         allowedHosts: [
             'localhost',
             '.trycloudflare.com',
-            'frost-attempted-midlands-invitations.trycloudflare.com'
+            'montgomery-owen-thehun-kid.trycloudflare.com'
         ], // Allow tunnel hosts
+        hmr: false, // 彻底禁用HMR WebSocket
         ...(useHttps && {
             https: {
                 key: readFileSync(sslKeyPath),
